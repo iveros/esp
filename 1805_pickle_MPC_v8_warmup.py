@@ -106,11 +106,11 @@ def shift(T, t0, x0, u, f):
     return t0, x0, u0
 
 # Echo state has 12 samples pr minute
-simtime = 5 #Minutes
+simtime = 3 #Minutes
 
-T = 1/12
+T = 1/12 # Sampling time
 N = 3# Prediction horizon
-length = int(simtime/T)
+length = int(simtime/T) # Number of datapoints
 
 # Min and max on inputs.
 z_max = 1
@@ -185,8 +185,8 @@ opts = {'ipopt':{'max_iter':100, 'print_level':0, 'acceptable_tol':1e-8, 'accept
 ## THE SIMULATION LOOP STARTS FROM HERE
 t0 = 0
 # x0 = vertcat(88e5,30e5,0.01)
-x0 = vertcat(77.9e5, 32.45e5, 0.011)
-xs = vertcat(77.9e5, 24e5, 0.011)
+x0 = vertcat(70e5,30e5,0.01)
+xs = vertcat(76e5,23e5,0.0115)
 #xs = vertcat(88e5,24e5,0.01)
 #xs = vertcat(76e5,24e5,0.0115)
 
@@ -199,8 +199,8 @@ t[0] = 0
 
 u0 = np.zeros([N,2])
 
-u0[:,0] = 0.5
-u0[:,1] = 55
+u0[:,0] = 0.4
+u0[:,1] = 40
 #u0 = zeros(N,1) # One control input.
 sim_tim = simtime # Maximum simulation time.xxl
 
@@ -222,7 +222,7 @@ p = vertcat(x0,xs)
 
 # Trying to make some kind of warm-up for the network. But not working as I want.
 for k in range(0,200):
-    u_data = feature_scaling([0.5, 55], u_max, u_min)
+    u_data = feature_scaling([0.4, 40], u_max, u_min)
     network.update(u_data)
 
 
@@ -281,7 +281,8 @@ while(mpciter < sim_tim / T):
     solver = nlpsol('solver','ipopt', nlp_prob, opts)  
     
     ax0 = reshape(u0.T,2*N,1) # initial value of the optimization variables (x0)
-    sol = solver(x0=ax0, lbx=args['lbx'], ubx=args['ubx'], p=args['p']) # Finding optimal control in the nlp_prob.
+    #sol = solver(x0=ax0, lbx=args['lbx'], ubx=args['ubx'], p=args['p']) # Finding optimal control in the nlp_prob.
+    sol = solver(x0=ax0, p=vertcat(x0,xs), lbx=args['lbx'], ubx=args['ubx'])
     u = reshape(sol['x'].full().T, (2,N)).T
  
     
