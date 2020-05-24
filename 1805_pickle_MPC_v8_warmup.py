@@ -119,7 +119,7 @@ f_max = 65
 f_min = 35
 
 # Importing network and some of the network parameters.
-pickle_file = open('esnFullpakke.pickle','rb') # Open Echo State Network
+pickle_file = open('esnFullpakkecompressed.pickle','rb') # Open Echo State Network
 
 network = pickle.load(pickle_file)
 saved_weights = network.save_reservoir("weightsTest")
