@@ -106,9 +106,9 @@ def shift(T, t0, x0, u, f):
     return t0, x0, u0
 
 # Echo state has 12 samples pr minute
-simtime = 3 #Minutes
+simtime = 1 #Minutes
 
-T = 1/12 # Sampling time
+T = 0.02 # Sampling time
 N = 3# Prediction horizon
 length = int(simtime/T) # Number of datapoints
 
@@ -119,7 +119,7 @@ f_max = 65
 f_min = 35
 
 # Importing network and some of the network parameters.
-pickle_file = open('esnespJean.pickle','rb') # Open Echo State Network
+pickle_file = open('esnFullpakke.pickle','rb') # Open Echo State Network
 
 network = pickle.load(pickle_file)
 saved_weights = network.save_reservoir("weightsTest")
@@ -164,7 +164,7 @@ u_min = np.array([0,35])
 g = [] # Constraints vector
 ## Tuning parameters
 Q = np.zeros((3,3))
-Q[0,0] = 1
+Q[0,0] = 1e9
 Q[1,1] = 1
 #Q[2,2] = 7e6 # Doesn't work to increase to inf.
 Q[2,2] = 10
@@ -221,9 +221,9 @@ lbg[2::3] = 0
 p = vertcat(x0,xs)
 
 # Trying to make some kind of warm-up for the network. But not working as I want.
-for k in range(0,200):
-    u_data = feature_scaling([0.4, 40], u_max, u_min)
-    network.update(u_data)
+# for k in range(0,200):
+#     u_data = feature_scaling([0.4, 40], u_max, u_min)
+#     network.update(u_data)
 
 
 
@@ -240,7 +240,7 @@ f_val = np.zeros([length,1]) # Tried to make an array with cost function values 
 
 stateshistory = np.zeros([length, 200, 2]) # Just to check if NN states are changing.
 
-
+y_pred = np.zeros([length,3])
 while(mpciter < sim_tim / T):
     
     tic = time.clock()
@@ -289,6 +289,7 @@ while(mpciter < sim_tim / T):
    # print(u)
     ff_value = ff(u.T,vertcat(x0,xs))
     #print(ff_value)
+    y_pred[mpciter,:] = ff_value[:,1].full().T
     xxl[:,0:3,mpciter] = ff_value.full().T
     
     
@@ -300,11 +301,9 @@ while(mpciter < sim_tim / T):
     
     [t0, x0, u0] = shift(T, t0, x0, u, f)
 
-
-    
     # Update network with the control input
     network.update(u[0,:])
-    print(u[0,:])
+    print("ukk :" + str(u))
     
     # Filling up matrix with the states history (the one that is plotted)
     xx[0,mpciter+1] = x0[0]
@@ -355,13 +354,5 @@ plt.step(t,u_cl[:,1],color='red', label='$f$')
 plt.grid()
 plt.legend()
 plt.ylabel('$p_{bh} \ [bar]$')
-
-
-# -*- coding: utf-8 -*-
-"""
-Created on Mon May 18 10:12:02 2020
-
-@author: iver_
-"""
 
 
